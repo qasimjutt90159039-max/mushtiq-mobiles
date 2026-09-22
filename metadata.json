@@ -1,0 +1,6 @@
+{
+  "name": "Al-Mushtaq Mobiles",
+  "description": "Premier mobile phone store in Multan, Pakistan. Authentic smartphones, PTA approved devices, accessories, expert repairs, and trade-in services.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
-import { createServer as createViteServer } from 'vite';
 import { initialProducts, initialCategories, initialBrands, sampleReviews, sampleQuestions, sampleCoupons, sampleBlogPosts, sampleWarrantyRecords } from './src/data/seedData';
 import { siteConfig } from './src/config/siteConfig';
 import { Product, Order, RepairTicket, TradeInRequest, InstallmentRequest, WarrantyRecord, Review, Question, Coupon, ContactMessage, BlogPost, SiteSettings, User } from './src/types';
@@ -851,7 +850,8 @@ app.post('/api/auth/register', (req: Request, res: Response) => {
 // ---------------- Vite Middleware or Static Fallback ----------------
 
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
@@ -862,15 +862,25 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+      app.get('*', (_req: Request, res: Response) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+    }
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Al-Mushtaq Mobiles full-stack server running on http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Al-Mushtaq Mobiles full-stack server running on http://localhost:${PORT}`);
+    });
+  }
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
+export { app };
+
